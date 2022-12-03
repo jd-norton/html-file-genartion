@@ -1,11 +1,15 @@
 @ECHO OFF
 
-set cssPath=style.css
-set jsPath=script.js
+:: TODO: Variable to When to stop for start-gen, start and stop for middle-gen, and start for end-gen
 
-set indexPath=index.html
+set cssPath=..\..\color-progressive\styles.css
+set jsPath=..\..\color-progressive\script.js
 
-FOR /F "tokens=* delims=" %%x in (start-gen.html) DO echo %%x > %indexPath%
+set indexPath=..\index.html
+
+del %indexPath%
+
+FOR /F "tokens=* delims=" %%x in (start-gen.html) DO echo %%x >> %indexPath%
 
 :: write css to file
 FOR /F "tokens=* delims=" %%x in (%cssPath%) DO echo %%x >> %indexPath%
