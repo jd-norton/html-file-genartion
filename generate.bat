@@ -1,38 +1,49 @@
 @ECHO OFF
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: TODO: Loop through starting html file. Loop on it and add lines to output file until find line with "<head>" or where want to insert css. Loop and insert start and end "<styles>" and css file. Then go back to inserting html file until find line last line before "</body>" and insert start and end "<script>" and js file. Then finish inserting html into output. Done
+@REM TODO: Switch to using line number instead of checking if line contains substring
+set "cssGenStart=link rel="
+set "jsGenStart=script src="
 
-set "middleGenStart=    <body>"
-set "middleGenEnd=        </div>"
-set inRange=false
-
-set middleGenPath=..\..\color-progressive\index.html
+set htmlInputPath=..\..\color-progressive\index.html
 set cssPath=..\..\color-progressive\styles.css
 set jsPath=..\..\color-progressive\script.js
-
 set indexPath=..\index.html
 
+set cssStart=cssStart.txt
+set cssEnd=cssEnd.txt
+set jsStart=jsStart.txt
+set jsEnd=jsEnd.txt
+set skipLine=false
+
 del %indexPath%
+type NUL > %indexPath%
 
-FOR /F "tokens=* delims=" %%x in (start-gen.html) DO echo %%x >> %indexPath%
+FOR /F "tokens=*" %%x in (%htmlInputPath%) DO (
+    set "line=%%x"
 
-:: write css to file
-FOR /F "tokens=* delims=" %%x in (%cssPath%) DO echo %%x >> %indexPath%
+    echo."!line!" | findstr /C:"%cssGenStart%">nul && (
 
-FOR /F "tokens=* delims=" %%x in (pre-middle-gen.html) DO echo %%x >> %indexPath%
+        type %cssStart% >> %indexPath%
+        type %cssPath% >> %indexPath%
+        type %cssEnd% >> %indexPath%
 
+        set skipLine=true
+    )
 
-FOR /F "tokens=* delims=" %%x in (%middleGenPath%) DO (
+    echo."!line!" | findstr /C:"%jsGenStart%">nul && (
 
-    IF %%x == middleGenStart set inRange=true
+        type %jsStart% >> %indexPath%
+        type %jsPath% >> %indexPath%
+        type %jsEnd% >> %indexPath%
 
-    IF %%x == middleGenEnd set inRange=false
-    
-    IF %inRange% == "true" echo %%x >> %indexPath%
-    ::ECHO is OFF??? not working
+        set skipLine=true
+    )
+
+    IF !skipLine!==false (
+        echo !line! >> %indexPath%
+    ) ELSE (
+        set skipLine=false
+    ) 
+
 )
-
-:: write js to file
-FOR /F "tokens=* delims=" %%x in (%jsPath%) DO echo %%x >> %indexPath%
-
-FOR /F "tokens=* delims=" %%x in (end-gen.html) DO echo %%x >> %indexPath%
