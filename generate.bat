@@ -1,22 +1,49 @@
 @ECHO OFF
+SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: TODO: Variable to When to stop for start-gen, start and stop for middle-gen, and start for end-gen
+@REM TODO: Switch to using line number instead of checking if line contains substring
+set "cssGenStart=link rel="
+set "jsGenStart=script src="
 
+set htmlInputPath=..\..\color-progressive\index.html
 set cssPath=..\..\color-progressive\styles.css
 set jsPath=..\..\color-progressive\script.js
-
 set indexPath=..\index.html
 
+set cssStart=cssStart.txt
+set cssEnd=cssEnd.txt
+set jsStart=jsStart.txt
+set jsEnd=jsEnd.txt
+set skipLine=false
+
 del %indexPath%
+type NUL > %indexPath%
 
-FOR /F "tokens=* delims=" %%x in (start-gen.html) DO echo %%x >> %indexPath%
+FOR /F "tokens=*" %%x in (%htmlInputPath%) DO (
+    set "line=%%x"
 
-:: write css to file
-FOR /F "tokens=* delims=" %%x in (%cssPath%) DO echo %%x >> %indexPath%
+    echo."!line!" | findstr /C:"%cssGenStart%">nul && (
 
-FOR /F "tokens=* delims=" %%x in (middle-gen.html) DO echo %%x >> %indexPath%
+        type %cssStart% >> %indexPath%
+        type %cssPath% >> %indexPath%
+        type %cssEnd% >> %indexPath%
 
-:: write js to file
-FOR /F "tokens=* delims=" %%x in (%jsPath%) DO echo %%x >> %indexPath%
+        set skipLine=true
+    )
 
-FOR /F "tokens=* delims=" %%x in (end-gen.html) DO echo %%x >> %indexPath%
+    echo."!line!" | findstr /C:"%jsGenStart%">nul && (
+
+        type %jsStart% >> %indexPath%
+        type %jsPath% >> %indexPath%
+        type %jsEnd% >> %indexPath%
+
+        set skipLine=true
+    )
+
+    IF !skipLine!==false (
+        echo !line! >> %indexPath%
+    ) ELSE (
+        set skipLine=false
+    ) 
+
+)
