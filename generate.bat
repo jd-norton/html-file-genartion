@@ -16,7 +16,10 @@ set jsStart=jsStart.txt
 set jsEnd=jsEnd.txt
 set skipLine=false
 
-del %indexPath%
+IF EXIST %indexPath% (
+    del %indexPath%
+)
+
 type NUL > %indexPath%
 
 FOR /F "tokens=*" %%x in (%htmlInputPath%) DO (
